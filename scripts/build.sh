@@ -1,18 +1,5 @@
 #!/bin/bash -e
 
-function contains() {
-    local target=$@[$#]
-    local len=$#
-    for ((i=1;i<${len};i++)); do 
-        if [[ "$@[${i}]" = *${target}* ]]; then
-            MATCH=$@[${i}]
-            echo "${MATCH}"
-            return
-        fi
-    done
-    echo ""
-}
-
 ROOT=`git rev-parse --show-toplevel`
 
 # pushd doesnt work when invoked from zsh
@@ -21,20 +8,6 @@ _OLDPWD=`pwd`
 cd ${ROOT}
 LOG_DIR=${ROOT}
 LOG_NAME=output.log
-
-FILES=`find ${ROOT} -type f -name "*.vhd"`
-IFS=$'\n' read -rd '' -A files_array <<< "$FILES"
-
-ENTITIES=()
-
-for f in ${files_array}; do
-    fname=$(basename -- "${f}")
-    fonly="${${fname}%.*}"
-    ENTITIES+=(${fonly})
-done
-
-Pfile=$(contains "${files_array[@]}" "package")
-Pname=$(contains "${ENTITIES[@]}"    "package")
 
 if [[ -f "${LOG_NAME}" ]]; then
     echo "== Removing old log ${LOG_DIR}/${LOG_NAME}"
@@ -52,19 +25,16 @@ WORK=${ROOT}/work
 cd src
 
 echo "== Analysing source files"  | tee -a ${LOG_DIR}/${LOG_NAME}
-
+ENTITIES=(counter counter_impl top_model top_model_impl top_model_tb) 
 
 echo "== Starting with the package"  | tee -a ${LOG_DIR}/${LOG_NAME}
-echo "  ${Pname}" | tee -a ${LOG_DIR}/${LOG_NAME}
-ghdl -a --std=08 -v --workdir=${WORK} ${Pfile} | tee -a ${LOG_DIR}/${LOG_NAME}
+echo "  tutorial_package.vhd" | tee -a ${LOG_DIR}/${LOG_NAME}
+ghdl -a --std=08 -v --workdir=${WORK} tutorial_package.vhd | tee -a ${LOG_DIR}/${LOG_NAME}
 
 echo "== Now the rest"  | tee -a ${LOG_DIR}/${LOG_NAME}
 for f in "${ENTITIES[@]}"
 do
     FPATH=""
-    if [[ ${f} == ${Pname} ]]; then
-        continue
-    fi
     if [[ ${f} == *tb ]]; then
         FPATH="${ROOT}/test/"
     fi
