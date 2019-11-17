@@ -1,3 +1,10 @@
 *.log
 work/
 *.ghw
+build/
+
+*.log
+*.aux
+*.lof
+*.toc
+*.out

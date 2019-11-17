@@ -1,0 +1,86 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{helvet}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+% Break URL on hyphens
+\makeatletter
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\makeatother
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt} % Remove line
+\fancyfoot[R]{Version \input{|"git rev-parse --short HEAD"}}
+\fancyhead[C]{\leftmark}
+\fancyfoot[L]{\thepage}
+
+\setlength{\parindent}{0cm}  % No indent on pararaph
+
+\title{VHDL 101}
+\author{Patrick Mintram}
+
+\begin{document}
+
+\clearpage\maketitle
+\thispagestyle{empty} % No page numbering
+\pagebreak
+
+\section{Intoduction}
+Things this session is intended to wet your appetite to the world of FPGAs, so that if you choose to you can start having a play in your own time. This session is:
+\begin{enumerate}
+    \item A brief overview of VHDL
+    \item A chance to get hands on with some Hardware
+    \item A chance to make a 'hello world' in Hardware
+\end{enumerate}
+
+Things this session is not:
+\begin{enumerate}
+    \item An introduction to Digital Design
+    \item A comprehensive deep dive into VHDL
+    \item Likely to finish on time
+\end{enumerate}
+
+\pagebreak
+\tableofcontents
+\listoffigures
+\pagebreak
+
+\setlength{\parskip}{1em}
+
+\section{Why Should I Care?}
+FPGAs enable Low Latency processing \footnote{\url{https://blog.esciencecenter.nl/why-use-an-fpga-instead-of-a-cpu-or-gpu-b234cd4f309c}}, so performing a transform on data coming in and getting the result output an be much faster than in a traditional CPU based approach. They also provide far more IO configurability than the traditional approach; the IO logic, and the pin it's connected to are totally configurable in code and contstraints files. Say a rquirement changes from an 8 bit UART bus to a proprietry 11 but UART bus - this would require a whole new microcontroller in a traditional approach however with an FPGA this might only require a change to a \texttt{generic} and a recompile. 
+
+For the reasons stated above, typical uses include signal processing such as filtering \footnote{\url{https://digital-library.theiet.org/content/journals/10.1049/iet-cdt.2016.0067}}, and High Speed IO such as devices produced by SpeedGoat \footnote{\url{https://www.speedgoat.com/products/simulink-programmable-fpgas-fpga-i-o-modules-io334}}.
+
+\section{How to use this guide}
+Coloured boxes for step by step instructions. Not expected to follow it step by step but just reference it to work at own pace.
+
+\subsection{Terminology}
+HDL
+Entity
+Module
+Architecture
+Dataflow
+RTL
+Sythesise
+
+\subsection{Toolchain}
+Vivade vs Quartus. Others - yosys, ghdl etc
+\section{Important things to remember}
+It's not software it's hardware
+\section{Finally lets get to doing some VHDL}
+
+\subsection{Reference Project}
+This will be an overview of the refernce project
+\subsection{How to see output from our VHDL}
+\subsubsection{Simulation}
+How to interpret the waveforms
+\subsubsection{On the hardware itself}
+How to load onto the board
+
+
+
+\end{document}
