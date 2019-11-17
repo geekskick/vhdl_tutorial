@@ -1,9 +1,12 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{calc}
 \usepackage{helvet}
 \usepackage{graphicx}
 \usepackage{fancyhdr}
 \usepackage[hidelinks]{hyperref}
 \usepackage{url}
+\graphicspath{./src/}
 
 % Break URL on hyphens
 \makeatletter
@@ -18,6 +21,30 @@
 \fancyfoot[L]{\thepage}
 
 \setlength{\parindent}{0cm}  % No indent on pararaph
+
+\newlength\myheight
+\newlength\mydepth
+\settototalheight\myheight{Xygp}
+\settodepth\mydepth{Xygp}
+\setlength\fboxsep{0pt}
+\newcommand*\inlinegraphics[1]{%
+  \settototalheight\myheight{Xygp}%
+  \settodepth\mydepth{Xygp}%
+  \raisebox{-\mydepth}{\includegraphics[height=\myheight]{#1}}%
+}
+
+\newcommand{\instructionbox}[2]{\medskip%
+\fbox{\begin{minipage}{\textwidth}%
+    \medskip%
+    \begin{center}%
+        #1%
+    \end{center}%
+    \medskip%
+\end{minipage}}%
+\medskip%
+}
+
+\newcommand{\handwaving}{\inlinegraphics{./src/hand.png}}
 
 \title{VHDL 101}
 \author{Patrick Mintram}
@@ -43,44 +70,60 @@ Things this session is not:
     \item Likely to finish on time
 \end{enumerate}
 
+By the end of this session you should have configured an FPGA to react to a switch input, and to see that output on an LED.
+
+\section{How to use this guide}
+It is not expected that session participants follow this document step by step. It expected that participants reference it to work at own pace, or to be able to recreate the work in their own time. Participants are encouraged to make notes are they require on this document, once printed. 
+
+The hand \handwaving icon will appear when something is purposely had some handwaving applied to it to keep it simple.
+
+\instructionbox{Anything in a box in an instruction to complete, like 'click this' or 'type this'}
+
+\subsection{Terminology}
+This document contains a number of terms which may be new to people so a brief overview of these follows:
+\begin{itemize}
+    \item \textbf{HDL} stands for Hardware Description Language, of which VHDL is one. Others include Verilog, System Verilog and System C. There are of course many more, but these 4 are the ones that I have come across most. Note that these are specifically used to describe digital circuits, if you want to describe analog circuits there are flavours such as Verilog-AMS(Analog and Mixed-Signal) or VHDL-AMS(Analog/Mixed-Signal Extension), I have never come across these in the wild though.
+    \item \textbf{Entity} is a keyword in VHDL. Each item you describe in VHDL is in an \emph{entity} and is split into two parts; the entity \emph{declaration} and the entity \emph{architecture}.
+    \item \textbf{Module} is not a keyword in VHDL, but at a high level the term may be banded around as a way of describing a distinct design unit, e.g. an entity is a module of an overall design.
+    \item \textbf{Architecture} is another keyword. The architecture of an entity is it's implementation details. An entity may have more than one architecture, where the one instantiated can be selected via a configuration.
+    \item \textbf{Dataflow} is a type of architecture implementation in which the source code describes the flow of data in the module, and leaves the structure of the design up to the toolchain.
+    \item \textbf{Behavioural} is a type of architecture implementation in which the source code describes the behaviour of the module. This is most familiar to us as software engineers as it is a high level description of the module using abstractions such as \texttt{if} \texttt{else} etc. This may not be the most efficient way of doing the job, but it's relatively quick and easier to understand, even if it's not synthesisable. \emph{Writing the flowchart}
+    \item \textbf{RTL} is a type of architecture implementation in which the source code is fully synthesisable may go into detail about the gates in the module. \emph{Writing the circuit diagram}
+    \item \textbf{Synthesis} is the process of turning your description into blocks of hardware.\handwaving There are a number of steps to turning VHDL source code into a format actually usable by an FPGA, and often people refer to the process as compilation or synthesis. 
+\end{itemize}
+
 \pagebreak
 \tableofcontents
 \listoffigures
 \pagebreak
 
-\setlength{\parskip}{1em}
+\setlength{\parskip}{\medskipamount}
 
 \section{Why Should I Care?}
-FPGAs enable Low Latency processing \footnote{\url{https://blog.esciencecenter.nl/why-use-an-fpga-instead-of-a-cpu-or-gpu-b234cd4f309c}}, so performing a transform on data coming in and getting the result output an be much faster than in a traditional CPU based approach. They also provide far more IO configurability than the traditional approach; the IO logic, and the pin it's connected to are totally configurable in code and contstraints files. Say a rquirement changes from an 8 bit UART bus to a proprietry 11 but UART bus - this would require a whole new microcontroller in a traditional approach however with an FPGA this might only require a change to a \texttt{generic} and a recompile. 
+FPGAs enable Low Latency processing \footnote{\url{https://blog.esciencecenter.nl/why-use-an-fpga-instead-of-a-cpu-or-gpu-b234cd4f309c}}, so performing a transform on data coming in and getting the result output an be much faster than in a traditional CPU based approach. They also provide far more IO configurability than the traditional approach; the IO logic, and the pin it's connected to are totally configurable in code and constraints files\handwaving. Say a requirement changes from an 8 bit UART bus to a proprietary 11 bit UART bus - this would require a whole new microcontroller in a traditional approach however with an FPGA this might only require a change to a \texttt{generic} and a recompile. 
 
 For the reasons stated above, typical uses include signal processing such as filtering \footnote{\url{https://digital-library.theiet.org/content/journals/10.1049/iet-cdt.2016.0067}}, and High Speed IO such as devices produced by SpeedGoat \footnote{\url{https://www.speedgoat.com/products/simulink-programmable-fpgas-fpga-i-o-modules-io334}}.
 
-\section{How to use this guide}
-Coloured boxes for step by step instructions. Not expected to follow it step by step but just reference it to work at own pace.
-
-\subsection{Terminology}
-HDL
-Entity
-Module
-Architecture
-Dataflow
-RTL
-Sythesise
-
 \subsection{Toolchain}
-Vivade vs Quartus. Others - yosys, ghdl etc
+Vivado vs Quartus. Others - yosys, ghdl etc
 \section{Important things to remember}
 It's not software it's hardware
 \section{Finally lets get to doing some VHDL}
-
 \subsection{Reference Project}
-This will be an overview of the refernce project
+This will be an overview of the reference project
 \subsection{How to see output from our VHDL}
 \subsubsection{Simulation}
 How to interpret the waveforms
 \subsubsection{On the hardware itself}
 How to load onto the board
 
+\section{Further Activities}
+If this has been fun, and you want to learn more here are some useful resources I have had successes with:
 
+\begin{itemize}
+    \item Effective Coding with VHDL\footnote{\url{https://www.amazon.co.uk/Effective-Coding-VHDL-Principles-Practice/dp/0262034220}} 
+    \item Awesome VHDL \footnote{\url{https://github.com/VHDL/awesome-vhdl}}
+    \item Digital Fundamentals \footnote{\url{https://www.amazon.co.uk/Digital-Fundamentals-Thomas-L-Floyd/dp/0132737965}}
+\end{itemize}
 
 \end{document}
