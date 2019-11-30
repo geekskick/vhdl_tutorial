@@ -8,3 +8,4 @@ build/
 *.lof
 *.toc
 *.out
+.DS_Store
