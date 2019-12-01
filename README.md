@@ -14,6 +14,9 @@ cd scripts
 ./build.sh
 ```
 
+## Docoumentation
+The documenation provided is in the form of latex. There is a makefile provided, however as I'm doing this on a mac I found it easier to open the `main.tex` file in TexShop as all the package paths resolve and _just work_.
+
 ## To Do
 * Import to Vivado and synthesise
 * Put on a board
