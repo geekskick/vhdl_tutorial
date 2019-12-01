@@ -8,10 +8,10 @@ architecture beh of top_model_tb is
 
     constant num_lights : positive := 1;
     constant period     : time := 100 ns;
-    signal clk          : std_logic := '0';
-    signal en           : std_logic := '0';
-    signal rst          : std_logic := '0';
-    signal lights       : std_logic_vector(num_lights-1 downto 0) := (others => '0');
+    signal clk          : std_ulogic := '0';
+    signal en           : std_ulogic := '0';
+    signal rst          : std_ulogic := '0';
+    signal lights       : std_ulogic_vector(num_lights-1 downto 0) := (others => '0');
     signal done         : boolean := false;
 
 begin

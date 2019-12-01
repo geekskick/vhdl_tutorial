@@ -4,23 +4,26 @@ use ieee.numeric_std.all;
 
 entity counter is
     generic(
-        data_width : positive
+        data_width : positive;
+        max        : positive 
     );
     port(
-        clk        : in std_logic;
-        en         : in std_logic;
-        rst        : in std_logic;
-        q          : out std_logic_vector(data_width-1 downto 0)
+        clk        : in std_ulogic;
+        en         : in std_ulogic;
+        rst        : in std_ulogic;
+        q          : out std_ulogic_vector(data_width-1 downto 0)
     );
 end entity;
 
 architecture beh of counter is
+
     type private_register_t is record
-        count: integer range 0 to q'high;
+        count: natural range 0 to max + 1;
     end record;
 
     signal reg_in : private_register_t := (count => 0);
     signal reg_out: private_register_t := (count => 0);
+
 begin
 
     process(reg_out, clk, rst, en)
@@ -28,13 +31,13 @@ begin
     begin
         v := reg_out;
 
-        if v.count + 1 > q'high then
+        if v.count + 1 > max then
             v.count := 0;
         else
             v.count := v.count + 1;
         end if;
+
         reg_in <= v;
-        q <= std_logic_vector(to_unsigned(reg_out.count, q'length));
 
     end process;
 
@@ -48,5 +51,7 @@ begin
             end if;
         end if;
     end process;
+
+    q <= std_ulogic_vector(to_unsigned(reg_out.count, q'length));
 
 end architecture;

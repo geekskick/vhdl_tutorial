@@ -9,3 +9,5 @@ build/
 *.toc
 *.out
 .DS_Store
+*.lot
+*.gz
