@@ -1,29 +1,31 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity top_model_tb is
+entity counter_tb is
 end entity;
 
-architecture beh of top_model_tb is
+architecture beh of counter_tb is
 
-    constant num_lights : positive := 4;
-    constant period     : time := 10 ns;
+    constant data_width : positive := 4;
+    constant max        : positive := 10;
+    constant period     : time := 100 ns;
     signal clk          : std_ulogic := '1';
     signal en           : std_ulogic := '0';
     signal rst          : std_ulogic := '0';
-    signal lights       : std_ulogic_vector(num_lights-1 downto 0) := (others => '0');
     signal done         : boolean := false;
+    signal q            : std_ulogic_vector(data_width-1 downto 0) := (others => '0');
 
 begin
-    uut: entity work.top_model 
+    uut: entity work.counter 
     generic map(
-        num_lights => num_lights
+        data_width => data_width,
+        max        => max
     )
     port map(
         clk        => clk,
         en         => en,
         rst        => rst,
-        lights     => lights
+        q          => q
     );
 
     tick: process
@@ -39,7 +41,7 @@ begin
     begin
         rst <= '0';
         en <= '1';
-        wait for 500 ms;
+        wait for period * 20;
         done <= true;
         wait;
     end process;

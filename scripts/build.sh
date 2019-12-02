@@ -25,7 +25,7 @@ WORK=${ROOT}/work
 cd src
 
 echo "== Analysing source files"  | tee -a ${LOG_DIR}/${LOG_NAME}
-ENTITIES=(counter top_model top_model_tb) 
+ENTITIES=(counter top_model top_model_tb counter_tb)  
 
 echo "== Starting with the package"  | tee -a ${LOG_DIR}/${LOG_NAME}
 echo "  tutorial_package.vhd" | tee -a ${LOG_DIR}/${LOG_NAME}

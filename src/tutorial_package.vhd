@@ -27,4 +27,12 @@ package tutorial_package is
             q          : out std_ulogic_vector(data_width-1 downto 0)
         );
     end component;
+
+    component user_defined is
+        port(
+            switch1 : in std_ulogic;
+            switch2 : in std_ulogic;
+            output  : out std_ulogic
+    end component;
+
 end package;

@@ -26,7 +26,7 @@ architecture beh of counter is
 
 begin
 
-    process(reg_out, clk, rst, en)
+    process(reg_out)
         variable v : private_register_t := (count => 0);
     begin
         v := reg_out;
