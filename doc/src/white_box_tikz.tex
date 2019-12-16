@@ -5,14 +5,20 @@
       	},
       	node distance = 0.5cm
     ]
+    
+    \def\boxwidth{5cm}
+    \def\boxheight{3cm}
+    \def\boxtextsize{8pt}
+    \def\boxtabsize{0.25cm}
+    
     \tikzstyle{process} = [rounded corners, minimum width=2cm, minimum height=2cm, draw=black]
     \tikzstyle{arrow} = [thick,->]            
     
     \node (SL)[process,align=left]{
-    	\begin{minipage}[t][3cm]{4cm} 
-    		\fontsize{8pt}{8pt}\selectfont
+    	\begin{minipage}[t][\boxheight]{\boxwidth} 
+    		\fontsize{\boxtextsize}{\boxtextsize}\selectfont
     		\textbf{Synchronous Logic} \\ \\ \\ 
-    		\texttt{if rising edge of clock:\\\hspace*{0.25cm}if rst = '1': \\ \hspace*{0.5cm}out = 0 \\\hspace*{0.25cm}else if en = '1': \\ \hspace*{0.5cm}out = in}
+    		\texttt{if rising edge of clock:\\\hspace*{\boxtabsize}if rst = '1': \\\hspace*{\boxtabsize}\hspace*{\boxtabsize}out = 0 \\\hspace*{\boxtabsize}else if en = '1': \\\hspace*{\boxtabsize}\hspace*{\boxtabsize}out = in}
     	\end{minipage}
     };
     
@@ -22,10 +28,10 @@
     \node(Q)[right= of SL, xshift=5cm]{q};
 
     \node (CL)[process, align=left, below = of SL,]{
-    	\begin{minipage}[t][3cm]{4cm} 
-    		\fontsize{8pt}{8pt}\selectfont
+    	\begin{minipage}[t][\boxheight]{\boxwidth} 
+    		\fontsize{\boxtextsize}{\boxtextsize}\selectfont
     		\textbf{Combinatorial Logic} \\ \\ \\
-    		\texttt{if count + 1 $\geq$ max:\\\hspace*{0.25cm}count = 0 \\ else \\\hspace*{0.25cm}count = count + 1}
+    		\texttt{if count + 1 $\geq$ max:\\\hspace*{\boxtabsize}count = 0 \\ else \\\hspace*{\boxtabsize}count = count + 1}
     	\end{minipage}
     };
     
