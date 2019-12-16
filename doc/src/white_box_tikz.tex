@@ -1,0 +1,45 @@
+\begin{tikzpicture}[
+		decoration={
+     		markings,
+      		mark= at position 0.7 with {\node {//};}
+      	},
+      	node distance = 0.5cm
+    ]
+    \tikzstyle{process} = [rounded corners, minimum width=2cm, minimum height=2cm, draw=black]
+    \tikzstyle{arrow} = [thick,->]            
+    
+    \node (SL)[process,align=left]{
+    	\begin{minipage}[t][3cm]{4cm} 
+    		\fontsize{8pt}{8pt}\selectfont
+    		\textbf{Synchronous Logic} \\ \\ \\ 
+    		\texttt{if rising edge of clock:\\\hspace*{0.25cm}if rst = '1': \\ \hspace*{0.5cm}out = 0 \\\hspace*{0.25cm}else if en = '1': \\ \hspace*{0.5cm}out = in}
+    	\end{minipage}
+    };
+    
+    \node(clk)[left = of SL, xshift=-2cm, yshift=0.9cm]{clk};
+    \node(en)[left = of SL, xshift=-2cm, yshift=0.3cm]{en};
+    \node(rst)[left = of SL, xshift=-2cm, yshift=-0.3cm]{rst};
+    \node(Q)[right= of SL, xshift=5cm]{q};
+
+    \node (CL)[process, align=left, below = of SL,]{
+    	\begin{minipage}[t][3cm]{4cm} 
+    		\fontsize{8pt}{8pt}\selectfont
+    		\textbf{Combinatorial Logic} \\ \\ \\
+    		\texttt{if count + 1 $\geq$ max:\\\hspace*{0.25cm}count = 0 \\ else \\\hspace*{0.25cm}count = count + 1}
+    	\end{minipage}
+    };
+    
+    \draw [arrow]  ([xshift=1cm]SL.east) |- node[below]{count} (CL.east);
+    \draw [arrow] (clk.east) -- ([yshift=0.9cm]SL.west);
+    \draw [arrow] (en.east) -- ([yshift=0.3cm]SL.west);
+    \draw [arrow] (rst.east) -- ([yshift=-0.3cm]SL.west);
+    \draw [arrow] (CL.west) -| ([xshift=-1cm]CL.west) node[ below]{count} -- ([xshift=-1cm, yshift=-0.9cm]SL.west) -- node[left, above]{in} ([yshift=-0.9cm]SL.west);
+    \draw [arrow, postaction={decorate}] (SL.east) -- node[xshift=-2.3cm,above] {out} node[xshift=1cm, above=5pt] {data\_width} (Q.west|-counter.east);
+
+
+	\begin{pgfonlayer}{background}
+       	\path (SL.north west)+(-2,0.2) node (a) {};
+		\path (CL.south east)+(+2.3,-0.2) node (b) {};
+		\path[rounded corners, draw, dashed] (a) rectangle (b);
+	\end{pgfonlayer}
+	\end{tikzpicture}

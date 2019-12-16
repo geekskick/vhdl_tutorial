@@ -1,0 +1,20 @@
+ \begin{tikzpicture}[
+		decoration={
+      		markings,
+      		mark= at position 0.5 with {\node {//};}
+      	}
+    ]
+    \tikzstyle{entity} = [rectangle, rounded corners, minimum width=3cm, minimum height=4cm,text centered, draw=black]
+    \tikzstyle{arrow} = [thick,->]
+    
+   
+    \node (counter)[entity, align=center]{counter  \\ up to \texttt{max}};
+    \node(clk)[left of=counter, xshift = -3cm, yshift=1cm]{clk};
+    \node(en)[left of=counter, xshift = -3cm, yshift=0cm]{en};
+    \node(rst)[left of=counter, xshift = -3cm, yshift=-1cm]{rst};
+    \node (q)[right of=counter, xshift = 4cm]{q};
+    \draw [arrow] (clk.east) -- ([yshift=1cm]counter.west);
+    \draw [arrow] (en.east) -- ([yshift=0cm]counter.west);
+    \draw [arrow] (rst.east) -- ([yshift=-1cm]counter.west);
+    \draw [arrow, postaction={decorate}] (counter.east) -- node[above=5pt] {data\_width} (q.west|-counter.east);
+\end{tikzpicture}

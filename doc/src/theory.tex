@@ -1,0 +1,217 @@
+%------------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Introduction}
+This session is intended to wet your appetite to the world of FPGAs, so that if you choose to you can start having a play in your own time. This session is:
+\begin{enumerate}
+    \item A brief overview of VHDL
+    \item A chance to get hands on with some Hardware
+    \item A chance to make a \texttt{hello world} in Hardware
+\end{enumerate}
+
+Things this session is \emph{not}:
+\begin{enumerate}
+    \item An introduction to Digital Design
+    \item A comprehensive deep dive into VHDL
+    \item Likely to finish on time
+\end{enumerate}
+
+By the end of this session you should have conured an FPGA to react to a switch input, and to see that output on an LED. \\ \\
+\textbf{If you want to get straight to writing VHDL using the reference project skip to \cref{section:vhdl}: "\nameref{section:vhdl}"}. 
+
+%------------------------------------------------------------------------------------------------------------------------------------------------------
+\section{How to use this guide}
+It is not expected that session participants follow this document step by step. It expected that participants reference it to work at own pace, or to be able to recreate the work in their own time. Participants are encouraged to make notes are they require on this document, once printed. 
+
+The hand \handwaving icon will appear when something is purposely had some handwaving applied to it to keep it simple.
+
+\instructionbox{Anything in a box is an instruction to complete, like 'click this' or 'type this'}
+
+\subsection{Terminology}
+This document contains a number of terms which may be new to people so a brief overview of these follows:
+\begin{itemize}
+    \item \textbf{HDL} stands for Hardware Description Language, of which VHDL is one. Others include Verilog, System Verilog and System C. There are of course many more, but these 4 are the ones that I have come across most. Note that these are specifically used to describe digital circuits, if you want to describe analog circuits there are flavours such as Verilog-AMS(Analog and Mixed-Signal) or VHDL-AMS(Analog/Mixed-Signal Extension), I have never come across these in the wild though.
+    \item \textbf{Entity} is a keyword in VHDL. Each item you describe in VHDL is in an \emph{entity} and is split into two parts; the entity \emph{declaration} and the entity \emph{architecture}.
+    \item \textbf{Module} is not a keyword in VHDL, but at a high level the term may be banded around as a way of describing a distinct design unit, e.g. an entity is a module of an overall design.
+    \item \textbf{Architecture} is another keyword. The architecture of an entity is it's implementation details. An entity may have more than one architecture, where the one instantiated can be selected via a configuration.
+    \item \textbf{Behavioural} is a type of architecture implementation in which the source code describes the behaviour of the module. This is most familiar to us as software engineers as it is a high level description of the module using abstractions such as \texttt{if} \texttt{else} etc. This may not be the most efficient way of doing the job, but it's relatively quick and easier to understand, even if it's not synthesisable. \emph{Writing the flowchart}
+    \item \textbf{RTL} is a type of architecture implementation in which the source code is fully synthesisable may go into detail about the gates in the module. \emph{Writing the circuit diagram}
+    \item \textbf{Structural} is a type of architecture implementation in which the source code is a collection of instantiations of other components. 
+    \item \textbf{Synthesis} is the process of turning your description into blocks of hardware.\handwaving There are a number of steps to turning VHDL source code into a format actually usable by an FPGA, and often people refer to the process as compilation or synthesis. 
+    \item \textbf{PMOD}s are a type of plug in which are developed to fit onto Digilent dev boards such as the CAN Transciever shown in \cref{fig:pmod}. These are really easy ways to add functionality to your dev board without spending loads of money.
+\end{itemize}
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.5\textwidth]{./src/pmod_can.png}
+        \caption{A CAN PMOD}
+        \label{fig:pmod}
+    \end{center}
+\end{figure}
+\pagebreak
+\tableofcontents
+\listoffigures
+\listoftables
+\pagebreak
+
+\setlength{\parskip}{\medskipamount}
+
+%------------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Why Should I Care?}
+FPGAs enable Low Latency processing\footnote{\url{https://blog.esciencecenter.nl/why-use-an-fpga-instead-of-a-cpu-or-gpu-b234cd4f309c}}, so performing a transform on data coming in and getting the result output an be much faster than in a traditional CPU based approach. They also provide far more IO configurability than the traditional approach; the IO logic, and the pin it's connected to are totally configurable in code and constraints files\handwaving. Say a requirement changes from an 8 bit UART bus to a proprietary 11 bit UART bus - this would require a whole new microcontroller in a traditional approach however with an FPGA this might only require a change to a \texttt{generic} and a recompile. 
+
+For the reasons stated above, typical uses of FPGAs include signal processing such as filtering\footnote{\url{https://digital-library.theiet.org/content/journals/10.1049/iet-cdt.2016.0067}}, and high speed IO such as devices produced by SpeedGoat\footnote{\url{https://www.speedgoat.com/products/simulink-programmable-fpgas-fpga-i-o-modules-io334}}.
+\subsection{Toolchain}
+One takeaway from this should be that toolchains are important. Each device vendor will have their own proprietary toolchain. This means that you can approach FPGA development in one of two ways:
+\begin{enumerate}
+    \item Choose a toolchain you're familiar with, then a device from the manufacturer
+    \item Choose a device which suits your requirements, then potentially suffer with an unfamiliar toolchain
+\end{enumerate}
+
+Fortunately there are few realistic choices when it comes to this decision; use the Quartus toolchain with Intel\footnote{Altera} devices, or using the Vivado toolchain\footnote{Older Xilinx devices can use the ISE suit from Xilinx} with Xilinx devices. I am most familiar with Vivado, so this workshop is based around that. The reason for this choice is that the \emph{Zynq} range of devices from Xilinx are a System on Chip (SOC) which allows me to use either one/two ARM cores or some Programmable Logic or any combination of these in any projects I'm undertaking. Similar devices may exist from the Intel range, but at the time of buying my dev board they didn't. For an overview of some devices and toolchains you might come across see \cref{table:devices}.
+
+\begin{table}
+    \begin{center}
+        \begin{tabular}{| m{4cm} | m{4cm} | m{4cm} |}
+            \hline
+            Manufacturer & Toolchain & Device \\ \hline
+            Intel & Quartus \newline \includegraphics[width=30mm]{./src/quartus_logo.png} & Stratix \newline Cyclone \newline Arria \newline ... \\ \hline
+            Xilinx & Vivado \newline  \includegraphics[width=30mm]{./src/vivado_logo.jpg} & Ultrascale \newline Ultrascale+ \newline Spartan-7 \newline Virtex-7 \newline Kintex-7 \newline Artix-7 \newline Zynq-7000 \\ \hline
+            Xilinx & ISE \newline \includegraphics[width=30mm]{./src/ise_logo.jpg} & Virtex-6 \newline Spartan-6 \newline Coolrunner CPLD \\ \hline
+            ghdl & ghdl & Simulation only \\ \hline
+        \end{tabular}
+        \caption{An overview of devices and toolchains you might come across}
+        \label{table:devices}
+    \end{center}
+\end{table}
+
+There is also a third option when it comes to toolchains; if you don't care about synthesis a well known simulation tool is \texttt{ghdl}\footnote{\url{https://github.com/ghdl/ghdl}}. This allows for your VHDL code to be written, analysed, elaborated, and have testbenches run very quickly and without any synthesis. One of the obvious limitations with this is that it doesn't allow you to put the hardware onto a board. There are plenty of docs available online to reference when it comes to using this and this projects \texttt{build.sh} in the \texttt{scripts} directory might help as a starting point.  
+
+I have seen on twitter lots of talk\footnote{\url{https://twitter.com/ico_TC}} of the ULX3S\footnote{\url{https://radiona.org/ulx3s/}}, this is a low cost Lattice based dev board but unlike most other ones mentioned it's open source, including it's toolchain consisting of \texttt{yosys, nextpnr, icestrom, iverilog, symbiflow}. NB: I haven't done much looking into this so couldn't tell you what the tools do or if they are any good, that's an \emph{exercise left for the reader}.
+
+%------------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Important things to remember}
+There is one main thing to remember through all of this: \textbf{It's not software it's hardware}. Everything you do should be done with the hardware you're creating in the back of your mind. You should make sure you are familiar with the design guidance for your device of choice. This is because different devices are made of different things - the Xilinx guidance, for example, states that \emph{for multiplexers greater than 64:1, the tradeoffs need to be considered}\footnote{\url{https://wiki.electroniciens.cnrs.fr/images/Xilinx_HDL_Coding_style.pdf}} anything below this the device is super quick. 
+
+
+%------------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Finally lets get to learning about some VHDL}
+
+\subsection{How a Module design turns into VHDL} 
+In this section is an example turning from block diagram designs, into VHDL source code itself, along with an over of the data types and keywords seen in \Cref{table:keywords} and \Cref{table:datatypes}.
+\subsubsection{Black Box}
+Using a counter for a module, where the output \texttt{q} increments when the \texttt{clk} ticks, and the module is enabled as seen in \cref{fig:bbe}. The width of \texttt{q} is determined by the value of \texttt{data\_width}. If, for example the aim is to count up to  a \texttt{max} of 10, then \texttt{data\_width} would have to be \emph{at least} 4 wide ($\lfloor log_2(10)\rfloor + 1 = 4$). Synchronous modules in digital design also have an enable and reset inputs; allowing the user to turn it on and to put it back to a known state respectively. This can be seen as VHDL in \cref{fig:bbe_vhdl}.
+
+\begin{figure}[H]
+    \begin{center}
+       \input{black_box_tikz.tex}
+    \end{center}
+    \caption{A Black Box Entity}
+    \label{fig:bbe}
+\end{figure}
+
+\begin{figure}[H]
+    \begin{center}
+    	\lstinputlisting[language=VHDL, firstline=5, lastline=16]{../../src/counter.vhd}
+    \end{center}
+    \caption{A Black Box Entity in VHDL}
+    \label{fig:bbe_vhdl}
+\end{figure}
+
+\subsubsection{White Box}
+Now that the inputs and outputs are designed and implemented, we can look at the insides of the module. I have chosen to use a Moore Machine\footnote{\url{https://www.tutorialspoint.com/automata_theory/moore_and_mealy_machines.htm}} like in \cref{fig:mm}\footnote{\url{http://www-inst.eecs.berkeley.edu/~cs150/fa05/Lectures/07-SeqLogicIIIx2.pdf}} to do this. My implementation in \cref{fig:arch} should describe the logic diagram shown in \cref{fig:wbe}. \Cref{fig:wbe} is a system whereby the output \texttt{q} is based on the current state output only, and not the current state plus some combination of the inputs, hence it's a \emph{Moore Machine}. There is a \emph{combinatorial logic} section which works out the next thing to get clocked into the register, and a \emph{synchronous} part which clocks that through and handles the advancement of the state.
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=\textwidth]{./src/moore_machine.png}
+    \end{center}
+    \caption{Generic Moore Machine}
+    \label{fig:mm}
+\end{figure}
+
+\begin{figure}[H]
+    \begin{center}
+        \input{white_box_tikz.tex}
+    \end{center}
+    \caption{A White Box Entity with pseudocode Moore Machine}
+    \label{fig:wbe}
+\end{figure}
+
+When examining the source code in \cref{fig:arch} it important to remember that each process happens concurrently. Similarly any thing outside of a \texttt{process} block such as that on line 38 of the snippet also happens concurrently. If it helps, each line of code can be thought of as it's own process. To clarify that statement, and with reference to \cref{fig:arch}, there are 3 concurrent things happening:
+\begin{enumerate}
+	\item The \texttt{process} between lines 12-25, which is the \emph{combinatorial logic}
+	\item The \texttt{process} between lines 27-36, which is the \emph{synchronous logic}
+	\item The assignment of the output \texttt{q} on line 38
+\end{enumerate}
+
+\begin{figure}[H]
+    \begin{center}
+    	\lstinputlisting[language=VHDL, firstline=18]{../../src/counter.vhd}
+    \end{center}
+    \caption{The White Box Entity in VHDL}
+    \label{fig:arch}
+\end{figure}
+
+\begin{table}[H]
+    \begin{center}
+    \begin{threeparttable}
+        \begin{tabular}{| c | m{ 0.7\textwidth} |}
+            \hline
+             Keyword & Overview \\ \hline
+              \texttt{process} & The start of a process, in a process each instructions happens sequentially \\ \hline
+             \texttt{signal} & \handwaving Think of it as a wire that exists between processes. They are updated at the end of the process \\ \hline
+              \texttt{variable} & \handwaving Variables can only exists in a process, they update immediately unlike signals \\ \hline
+              \texttt{architecture} & Signifies the start of the internal details of an entity \\ \hline
+              \texttt{rising\_edge}\tnote{*}& Syntactic sugar equivalent to \texttt{if clk = '1' and clk'event} \\ \hline
+        \end{tabular}
+        \begin{tablenotes}
+        \footnotesize
+        \item[*] Not really a keyword, but important to know.
+        \end{tablenotes}
+        \end{threeparttable}
+        \caption{An overview of keywords we have seen}
+        \label{table:keywords}
+    \end{center}
+\end{table}
+
+\begin{table}[H]
+    \begin{center}
+    \begin{threeparttable}
+        \begin{tabular}{| c | m{ 0.7\textwidth} |}
+            \hline
+             Data Type & Overview \\ \hline
+              \texttt{std\_ulogic}\tnote{*}& This is defined in the \texttt{ieee.std\_logic\_1164} package and is an enumeration with the values 'U', 'X', '0', '1', 'Z', 'W', 'L', 'H' and '-' \\ \hline
+              \texttt{std\_ulogic\_vector} & Again defined in the  \texttt{ieee.std\_logic\_1164} package this is an array of \texttt{std\_ulogic}s \\ \hline
+             \texttt{positive} & This is a VHDL standard type and it's an \texttt{integer} with a range of 1 to at least $2^{31} -1$  \\ \hline
+              \texttt{record} & This is a VHDL standard type, similar to a struct \\ \hline
+        \end{tabular}
+        \begin{tablenotes}
+        \footnotesize
+        \item[*]Many online examples use  \texttt{std\_logic}, this is the 'resolved' version of  \texttt{std\_ulogic}. They are effectively the same except a signal of type \texttt{std\_logic} can be controlled from different places and errors will only show themselves at runtime.
+        \end{tablenotes}
+        \end{threeparttable}
+        \caption{An overview of data types we have seen}
+        \label{table:datatypes}
+    \end{center}
+\end{table}
+
+\subsection{Synthesiseable vs. Non-synthesiseable code}
+VHDL has lots of things that can't be translated into hardware, such as the \texttt{wait} statement and files. It's important to be aware that not everything you describe can turn into hardware. If in doubt consult resources such as the \emph{Doulus Guide} in \cref{section:fa}: \nameref{section:fa}.
+
+\subsection{How to see output from our VHDL}
+There are two ways to do this
+\begin{enumerate}
+    \item \textbf{Simulation} - this is often the quickest method as it allows us to delve into every signal and process of our design. This also happens on our development machine so we can make great progress and do 95\% of our coding without a device. Another bonus is that it doesn't require fully synthesiseable code, so you can use \texttt{wait} statements and stuff.
+    \item \textbf{Putting on the hardware} - this is where stuff gets tough. In this step the design will run at full speed on a device. You should only be doing this when you feel sufficiently confident that it'll work. If anything goes wrong here it can be extremely tough to debug it, or even detect it! It's very worthwhile having an oscilloscope\footnote{aka, DSO, silly scopes, or just scopes} at this point to help. 
+\end{enumerate}
+
+\subsubsection{Simulation}
+Simulations can be stimulated via a test bench (my personal favourite) or manually in some simulators. For this tutorial I have created a testbench to do this for both the \texttt{counter} module and the \texttt{top\_model} of the design. Note that the testbenches provided don't actually do any testing, they just instantiate the modules and wait for a certain amount of time. In real life these would contain a number of \texttt{assert} and \texttt{report} statements to allow a test to automatically fail. These test benches, and the \texttt{top\_model} also give an example of structural implementation, so you can see how a module is instantiated and connected up. Simulations will pop out a waveform,  which can be quite complicated to interpret if the design is big and has loads of signal, but in the case of our counter it's pretty easy. \Cref{fig:counter_wave} shows the output of \texttt{gtkwave} where the \texttt{clk} input and the output \texttt{q} can be seen plotted, note how \emph{after} the \texttt{clk} has a rising edge the value of \texttt{q} changes.
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=\textwidth]{./src/counter_waveform.png}
+    \end{center}
+    \caption{gtkwave output of our counter}
+    \label{fig:counter_wave}
+\end{figure}
+
+Although the example in \cref{fig:counter_wave} was made using \texttt{gtkwave} most waveforms generated will look the same. My advice here is to just have a play - download a simulation tool such as \texttt{ghdl} and \texttt{gtkwave}, or use the ones provided with you device's toolchain and go wild!
