@@ -34,6 +34,8 @@ Vivado is a pretty huge tool which produces loads of artefacts, most of which ar
 
 \subsubsection{Vivado}
 
+\instructionbox{Click \texttt{Generate Bitstream} and wait patiently, keep an eye on the top right corner of Vivado for the status!}
+
 \subsection{Run the simulation}
 \subsubsection{ghdl} 
 The script you ran before already did this, if you want you can run it again.
@@ -48,9 +50,50 @@ This has already been seen before in \cref{fig:counter_wave}.
 
 \subsubsection{Vivado}
 
+This is more complicated, because I have packaged the sources a \emph{Custom IP} so we can use it in the GUI. The easiest way of seeing the waveform is to create a new, blank, project. And to add the files in \texttt{src} and \texttt{test} as simulation sources. This isn't covered in this tutorial yet though as we are going to smash it straight on the hardware and I ran out of time.
+
 \subsection{Load onto the Device}
+In order to do this ensure you have generated the bitstream successfully. Unfortunately it's a bit of a pain, because we need to get the clock source from the ARM core working before we can see any difference in the FPGA. To do this we need to use the Vitis SDK to load an example application to the platform we have created, and run it. Fortunately this is a 'one time thing' for this practical session and we only need to do it once.
+
+\instructionbox{In Vivado: File > Export Hardware}
+
+\instructionbox{Open Vitis}
+
+\instructionbox{Create Application Project}
+
+\instructionbox{\emph{Create new platform from hardware} and nagivate to your generated \texttt{xsa} file. This is likely in your Vivado project directory}
+
+\instructionbox{Select the \emph{Peripheral Tests} example project}
+
+\instructionbox{Build}
+
+\instructionbox{In the top toolbar select 'Run As', then double click on \emph{Single Application Debug} to create a new configuration}
+
+\instructionbox{Click the green 'run' arrow}
+
+\instructionbox{Play with SW0 and see LED0 turn on and off and observe the LEDs going bonkers - this is your hardware in the FPGA being clocked by the Zynq's ARM core!A
+
 
 \subsection{Implement the architecture of the stubs}
+Now this is up to you to choose to do something extra in the stubs provided. As a starter try:
+\begin{enumerate}
+	\item Make a light turn on when you move a switch to it's \emph{on} position
+	\item Make a light turn on when both switches are in their \emph{on} positions
+\end{enumerate}
+
+\instructonbox{Go back to Vivado and right click the custom IP block}
+
+\instructionbox{Select the \emph{Edit} option}
+
+\instructionbox{Make your changes}
+
+\instructionbox{Repackage the IP}
+
+\instructionbox{Follow the prompts to update the IP in the block diagram}
+
+\instructionbox{Click \emph{Generate Bitstream} again and the export the hardware}
+
+\instructionbox{Now that the ARM's clock is ticking away we can skip the SDK and use Vivado's Hardware manager to program the device}
 
 \subsection{Device Overview}
 The Zedboard is a development board based around a Xilinx Zynq-7000 device. As previously mentioned it's got 2 ARM cores on board along with a bunch of Programmable Logic (seen in \cref{fig:zynq}). It's important to be aware of this because any bitstreams and designs we produce need to include an interface to one more more of these cores. Infact for the reference project they will serve as our clock source. There are heaps of things you can use which are already built in as peripherals to the PS such as GPIO, Serial Comms and PS-PL interuppt control. The fun part about FPGAs though is learning how to do this in the Programmable Logic!
