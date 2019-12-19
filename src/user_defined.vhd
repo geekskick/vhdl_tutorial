@@ -9,8 +9,10 @@ entity user_defined is
     );
 end entity;
 
-architecture foo of counter is
+architecture foo of user_defined is
 
 begin
+
+    output <= '0';
 
 end architecture;

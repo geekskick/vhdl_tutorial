@@ -33,6 +33,7 @@ package tutorial_package is
             switch1 : in std_ulogic;
             switch2 : in std_ulogic;
             output  : out std_ulogic
-    end component;
+        );
+     end component;
 
 end package;

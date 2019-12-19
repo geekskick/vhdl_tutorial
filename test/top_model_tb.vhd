@@ -17,13 +17,16 @@ architecture beh of top_model_tb is
 begin
     uut: entity work.top_model 
     generic map(
-        num_lights => num_lights
+        num_lights => num_lights,
+        threshold  => 400000
     )
     port map(
         clk        => clk,
         en         => en,
         rst        => rst,
-        lights     => lights
+        lights     => lights,
+        switch1    => '0',
+        switch2    => '1'
     );
 
     tick: process
